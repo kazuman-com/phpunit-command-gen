@@ -35,8 +35,14 @@ module.exports = PhpunitCommandGen =
         projectPath = val
         break
 
-    path = "." + editor.getPath().replace(projectPath, "").replace(/\\/g, "/")
-    atom.clipboard.write("phpunit " + path)
+    com = "docker exec docker_php_1 ./vendor/bin/phpunit"
+    path_prefix = "."
+    if /([a-z]+)$/.exec(projectPath)[0].indexOf("******") >= 0
+      com = "docker exec docker_******_1 /usr/local/******/vendor/bin/phpunit"
+      path_prefix = "/usr/local/******"
+
+    path = path_prefix + editor.getPath().replace(projectPath, "").replace(/\\/g, "/")
+    atom.clipboard.write(com + " " + path)
 
   toggle2: ->
     editor = atom.workspace.getActiveTextEditor()
@@ -48,16 +54,23 @@ module.exports = PhpunitCommandGen =
         projectPath = val
         break
 
-    path = "." + editor.getPath().replace(projectPath, "").replace(/\\/g, "/")
     pos = editor.getCursorScreenPosition()
     line = pos.row
+    com = "docker exec docker_php_1 ./vendor/bin/phpunit"
+    path_prefix = "."
+    if /([a-z]+)$/.exec(projectPath)[0].indexOf("******") >= 0
+      com = "docker exec docker_******_1 /usr/local/******/vendor/bin/phpunit"
+      path_prefix = "/usr/local/******"
+
+    path = path_prefix + editor.getPath().replace(projectPath, "").replace(/\\/g, "/")
+
     while line >= 0
       txt = editor.lineTextForScreenRow(line)
       if txt.indexOf("function") >= 0
         funcLine = txt.split(" ")
         for val,i in funcLine
           if val.indexOf("function") >= 0
-            atom.clipboard.write("phpunit --filter='" + funcLine[i+1].replace(/\(.*/, "") + "' " + path)
+            atom.clipboard.write(com + " --filter='" + funcLine[i+1].replace(/\(.*/, "") + "' " + path)
             line = -1
             break
 
